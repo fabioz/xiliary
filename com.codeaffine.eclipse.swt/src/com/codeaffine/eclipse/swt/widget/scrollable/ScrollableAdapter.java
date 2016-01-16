@@ -1,5 +1,7 @@
 package com.codeaffine.eclipse.swt.widget.scrollable;
 
+import static com.codeaffine.eclipse.swt.widget.scrollable.ScrollableAdapterFactory.createLayoutFactory;
+
 import java.awt.IllegalComponentStateException;
 
 import org.eclipse.swt.SWT;
@@ -8,11 +10,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Scrollable;
 
-class ScrollableAdapter<T extends Scrollable> extends Composite {
+import com.codeaffine.eclipse.swt.util.Platform;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.AdaptionContext;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.ScrollableControl;
+
+public class ScrollableAdapter<T extends Scrollable> extends Composite implements ScrollbarStyle {
 
   private final LayoutFactory<T> layoutFactory;
   private final T scrollable;
 
+  @SuppressWarnings("unchecked")
   ScrollableAdapter(
     Composite parent, Platform platform, ScrollableFactory<T> factory, LayoutMapping<T> ... mappings )
   {
@@ -27,44 +34,73 @@ class ScrollableAdapter<T extends Scrollable> extends Composite {
     throw new UnsupportedOperationException( getClass().getName() + " does not allow to change layout." );
   }
 
+  @Override
   public void setIncrementButtonLength( int length ) {
     layoutFactory.setIncrementButtonLength( length );
   }
 
+  @Override
   public int getIncrementButtonLength() {
     return layoutFactory.getIncrementButtonLength();
   }
 
+  @Override
   public void setIncrementColor( Color color ) {
     layoutFactory.setIncrementColor( color );
   }
 
+  @Override
   public Color getIncrementColor() {
     return layoutFactory.getIncrementColor();
   }
 
+  @Override
   public void setPageIncrementColor( Color color ) {
     layoutFactory.setPageIncrementColor( color );
   }
 
+  @Override
   public Color getPageIncrementColor() {
     return layoutFactory.getPageIncrementColor();
   }
 
+  @Override
   public void setThumbColor( Color color ) {
     layoutFactory.setThumbColor( color );
   }
 
+  @Override
   public Color getThumbColor() {
     return layoutFactory.getThumbColor();
   }
 
-  T getScrollable() {
+  @Override
+  public void setBackgroundColor( Color color ) {
+    layoutFactory.setBackgroundColor( color );
+  }
+
+  @Override
+  public Color getBackgroundColor() {
+    return layoutFactory.getBackgroundColor();
+  }
+
+  @Override
+  public void setDemeanor( Demeanor demeanor ) {
+    layoutFactory.setDemeanor( demeanor );
+  }
+
+  @Override
+  public Demeanor getDemeanor() {
+    return layoutFactory.getDemeanor();
+  }
+
+  public T getScrollable() {
     return scrollable;
   }
 
   private T createScrollable( ScrollableFactory<T> factory ) {
     T result = factory.create( this );
+    new ScrollableAdapterFactory().markAdapted( result );
     checkParent( factory, result );
     return result;
   }
@@ -78,18 +114,6 @@ class ScrollableAdapter<T extends Scrollable> extends Composite {
   }
 
   private Layout createLayout( ScrollableAdapter<T> adapter, T scrollable, LayoutFactory<T> layoutFactory ) {
-    return layoutFactory.create( adapter, scrollable );
-  }
-
-  private static <T extends Scrollable> LayoutFactory<T> createLayoutFactory(
-    Platform platform, LayoutMapping<T>[] mappings  )
-  {
-    LayoutFactory<T> result = new NativeLayoutFactory<T>();
-    for( LayoutMapping<T> layoutMapping : mappings ) {
-      if( platform.matchesOneOf( layoutMapping.getPlatformTypes() ) ) {
-        result = layoutMapping.getLayoutFactory();
-      }
-    }
-    return result;
+    return layoutFactory.create( new AdaptionContext<T>( adapter, new ScrollableControl<>( scrollable ) ) );
   }
 }

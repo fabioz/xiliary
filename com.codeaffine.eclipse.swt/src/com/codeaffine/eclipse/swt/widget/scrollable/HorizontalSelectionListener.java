@@ -3,25 +3,35 @@ package com.codeaffine.eclipse.swt.widget.scrollable;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Scrollable;
 
+import com.codeaffine.eclipse.swt.widget.scrollable.context.AdaptionContext;
 import com.codeaffine.eclipse.swt.widget.scrollbar.FlatScrollBar;
 
 class HorizontalSelectionListener extends SelectionAdapter {
 
-  private final Scrollable scrollable;
+  private final AdaptionContext<?> context;
 
-  HorizontalSelectionListener( Scrollable scrollable ) {
-    this.scrollable = scrollable;
+  HorizontalSelectionListener( AdaptionContext<?> context ) {
+    this.context = context;
   }
 
   @Override
   public void widgetSelected( SelectionEvent event ) {
-    Point location = scrollable.getLocation();
-    scrollable.setLocation( - getSelection( event ), location.y );
+    updateLocation( new Point( -getSelection( event ), computeHeight() ) );
   }
 
-  private static int getSelection( SelectionEvent event ) {
-    return ( ( FlatScrollBar )event.widget ).getSelection();
+  private int computeHeight() {
+    if( context.isScrollableReplacedByAdapter() ) {
+      return -context.getBorderWidth();
+    }
+    return context.getScrollable().getLocation().y - context.getBorderWidth();
+  }
+
+  private int getSelection( SelectionEvent event ) {
+    return ( ( FlatScrollBar )event.widget ).getSelection() + context.getBorderWidth();
+  }
+
+  private void updateLocation( final Point result ) {
+    context.getReconciliation().runWhileSuspended( () -> context.getScrollable().setLocation( result ) );
   }
 }

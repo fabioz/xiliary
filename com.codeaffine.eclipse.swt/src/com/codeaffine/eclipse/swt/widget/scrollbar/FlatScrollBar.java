@@ -17,6 +17,8 @@ import org.eclipse.swt.widgets.Listener;
 
 public class FlatScrollBar extends Composite {
 
+  public static final int BAR_BREADTH = 6;
+
   static final int DEFAULT_MINIMUM = 0;
   static final int DEFAULT_MAXIMUM = 100;
   static final int DEFAULT_INCREMENT = 1;
@@ -48,7 +50,7 @@ public class FlatScrollBar extends Composite {
     this( parent, style, DEFAULT_BUTTON_LENGTH, DEFAULT_MAX_EXPANSION );
   }
 
-  FlatScrollBar( final Composite parent, int style, int buttonLength, int maxExpansion ) {
+  FlatScrollBar( Composite parent, int style, int buttonLength, int maxExpansion ) {
     super( parent, SWT.NONE );
     super.setLayout( new FlatScrollBarLayout( getDirection( style ) ) );
     this.minimum = DEFAULT_MINIMUM;

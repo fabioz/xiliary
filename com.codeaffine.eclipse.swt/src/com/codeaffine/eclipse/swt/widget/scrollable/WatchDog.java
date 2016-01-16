@@ -1,47 +1,62 @@
 package com.codeaffine.eclipse.swt.widget.scrollable;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Scrollable;
 
 import com.codeaffine.eclipse.swt.util.ActionScheduler;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.AdaptionContext;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.Reconciliation;
 
 class WatchDog implements Runnable, DisposeListener {
 
   static final int DELAY = 10;
 
+  private final NestingStructurePreserver nestingStructurePresever;
   private final VerticalScrollBarUpdater verticalBarUpdater;
+  private final Reconciliation reconciliation;
   private final Visibility vScrollVisibility;
   private final Visibility hScrollVisibility;
+  private final WidthObserver widthObserver;
   private final LayoutTrigger layoutTrigger;
   private final ActionScheduler scheduler;
-  private final TreeWidth treeWidth;
+  private final AdaptionContext<?> context;
 
-  private boolean disposed;
+  boolean layoutInitialized;
+  boolean disposed;
 
-  WatchDog( Scrollable scrollable, LayoutContextFactory contextFactory, VerticalScrollBarUpdater verticalBarUpdater  ) {
-    this( verticalBarUpdater,
-          new Visibility( scrollable.getHorizontalBar(), contextFactory ),
-          new Visibility( scrollable.getVerticalBar(), contextFactory ),
+  WatchDog( AdaptionContext<?> context, VerticalScrollBarUpdater verticalUpdater ) {
+    this( context,
+          verticalUpdater,
+          new Visibility( SWT.HORIZONTAL, context ),
+          new Visibility( SWT.VERTICAL, context ),
           null,
-          new LayoutTrigger( scrollable.getParent() ),
-          new TreeWidth( scrollable, contextFactory ) );
+          new LayoutTrigger( context.getAdapter() ),
+          new WidthObserver( context ),
+          context.getReconciliation(),
+          new NestingStructurePreserver( context ) );
   }
 
-  WatchDog( VerticalScrollBarUpdater verticalBarUpdater,
+  WatchDog( AdaptionContext<?> context,
+            VerticalScrollBarUpdater verticalBarUpdater,
             Visibility hScrollVisibility,
             Visibility vScrollVisibility,
             ActionScheduler actionScheduler,
             LayoutTrigger layoutTrigger,
-            TreeWidth treeWidth )
+            WidthObserver treeWidth,
+            Reconciliation reconciliation,
+            NestingStructurePreserver nestingPresever )
   {
+    this.context = context;
     this.verticalBarUpdater = verticalBarUpdater;
     this.hScrollVisibility = hScrollVisibility;
     this.vScrollVisibility = vScrollVisibility;
+    this.nestingStructurePresever = nestingPresever;
     this.scheduler = ensureScheduler( actionScheduler );
+    this.reconciliation = reconciliation;
     this.layoutTrigger = layoutTrigger;
-    this.treeWidth = treeWidth;
+    this.widthObserver = treeWidth;
     scheduler.schedule( DELAY );
   }
 
@@ -53,21 +68,36 @@ class WatchDog implements Runnable, DisposeListener {
   @Override
   public void run() {
     if( !disposed ) {
-      doRun();
+      runWithReconciliationSuspended();
       scheduler.schedule( DELAY );
     }
   }
 
+  private void runWithReconciliationSuspended() {
+    reconciliation.runWhileSuspended( () -> doRun() );
+  }
+
   private void doRun() {
-    if( vScrollVisibility.hasChanged() || hScrollVisibility.hasChanged() || treeWidth.hasScrollEffectingChange() ) {
+    context.updatePreferredSize();
+    if( mustLayout() ) {
       layoutTrigger.pull();
     }
-    treeWidth.update();
+    widthObserver.update();
     vScrollVisibility.update();
     hScrollVisibility.update();
     if( vScrollVisibility.isVisible() ) {
       verticalBarUpdater.update();
     }
+    nestingStructurePresever.run();
+  }
+
+  private boolean mustLayout() {
+    boolean result =    !layoutInitialized
+                     || vScrollVisibility.hasChanged()
+                     || hScrollVisibility.hasChanged()
+                     || widthObserver.hasScrollEffectingChange();
+    layoutInitialized = true;
+    return result;
   }
 
   private ActionScheduler ensureScheduler( ActionScheduler actionScheduler ) {

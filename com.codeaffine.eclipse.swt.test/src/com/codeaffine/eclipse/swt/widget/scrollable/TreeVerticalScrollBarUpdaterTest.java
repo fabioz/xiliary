@@ -60,6 +60,22 @@ public class TreeVerticalScrollBarUpdaterTest {
   }
 
   @Test
+  public void updateWithBuffering() {
+    expandRootLevelItems( tree );
+
+    updater.update();
+    updater.update();
+
+    assertThat( scrollbar )
+    .hasIncrement( SELECTION_RASTER_SMOOTH_FACTOR )
+    .hasPageIncrement( updater.calculateThumb() )
+    .hasThumb( updater.calculateThumb() )
+    .hasMaximum( expectedMaximum() )
+    .hasMinimum( 0 )
+    .hasSelection( 0 );
+  }
+
+  @Test
   public void updateWithSelection() {
     expandTopBranch( tree );
     tree.setTopItem( tree.getItem( 0 ).getItem( 0 ) );
@@ -121,6 +137,18 @@ public class TreeVerticalScrollBarUpdaterTest {
       .hasMaximum( expectedMaximum() )
       .hasMinimum( 0 )
       .hasSelection( 0 );
+  }
+
+  @Test
+  public void calculateThumb() {
+    expandRootLevelItems( tree );
+    updater.update();
+
+    int before = updater.calculateThumb();
+    tree.setHeaderVisible( true );
+    int after = updater.calculateThumb();
+
+    assertThat( before ).isNotEqualTo( after );
   }
 
   @Test

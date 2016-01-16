@@ -3,6 +3,7 @@ package com.codeaffine.eclipse.swt.test.util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Decorations;
 import org.eclipse.swt.widgets.Shell;
 
 public class ShellHelper {
@@ -22,6 +23,24 @@ public class ShellHelper {
   public static Shell createShellWithoutLayout( DisplayHelper displayHelper, int style ) {
     Shell result = displayHelper.createShell( style );
     result.setBounds( DEFAULT_BOUNDS );
+    return result;
+  }
+
+  public static Shell createDemoShell( DisplayHelper displayHelper ) {
+    Shell result = createShell( displayHelper, SWT.SHELL_TRIM );
+    result.setBackground( displayHelper.getDisplay().getSystemColor( SWT.COLOR_WHITE ) );
+    result.setLayout( createDemoShellLayout() );
+    return result;
+  }
+
+  public static Rectangle computeTrim( Decorations decorations, Rectangle bounds ) {
+    return decorations.computeTrim( bounds.x, bounds.y, bounds.width, bounds.height );
+  }
+
+  private static FillLayout createDemoShellLayout() {
+    FillLayout result = new FillLayout();
+    result.marginHeight = 10;
+    result.marginWidth = 10;
     return result;
   }
 }

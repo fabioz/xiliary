@@ -2,15 +2,17 @@ package com.codeaffine.eclipse.swt.widget.scrollable;
 
 import static com.codeaffine.eclipse.swt.test.util.DisplayHelper.flushPendingEvents;
 
+import java.util.stream.Stream;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
-class TreeHelper {
+public class TreeHelper {
 
-  static void expandTopBranch( Tree tree ) {
+  public static void expandTopBranch( Tree tree ) {
     TreeItem item = tree.getItem( 0 );
     item.setExpanded( true );
     while( item.getItemCount() > 0 ) {
@@ -20,21 +22,22 @@ class TreeHelper {
     flushPendingEvents();
   }
 
-  static void expandRootLevelItems( Tree tree ) {
-    TreeItem[] items = tree.getItems();
-    for( TreeItem treeItem : items ) {
-      treeItem.setExpanded( true );
-    }
+  public static void expandRootLevelItems( Tree tree ) {
+    Stream.of( tree.getItems() ).forEach( item -> item.setExpanded( true ) );
     flushPendingEvents();
   }
 
-  static Tree createTree( Composite parent, int childCount , int levelCount  ) {
-    Tree result = new Tree( parent, SWT.NONE );
+  public static Tree createTree( Composite parent, int childCount, int levelCount  ) {
+    return createTree( parent, childCount, levelCount, SWT.NONE );
+  }
+
+  public static Tree createTree( Composite parent, int childCount, int levelCount, int style ) {
+    Tree result = new Tree( parent, style );
     createChildren( result, "tree-item_", childCount, levelCount );
     return result;
   }
 
-  private static void createChildren( Widget parent, String name, int childCount, int levelCount  ) {
+  static void createChildren( Widget parent, String name, int childCount, int levelCount  ) {
     for( int i = 0; i < childCount; i++ ) {
       TreeItem item = createItem( parent );
       String itemName = name + i;

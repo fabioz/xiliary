@@ -12,8 +12,8 @@
   <packaging>pom</packaging>
 
   <properties>
-    <tycho-version>0.20.0</tycho-version>
-    <tycho-extras-version>0.20.0</tycho-extras-version>
+    <tycho-version>0.23.0</tycho-version>
+    <tycho-extras-version>0.23.0</tycho-extras-version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -50,9 +50,18 @@
     
     <!-- Eclipse UI -->
     <module>../com.codeaffine.eclipse.ui.feature</module>
+    <module>../com.codeaffine.eclipse.ui.swt.theme.feature</module>
     
     <module>../com.codeaffine.eclipse.ui</module>
     <module>../com.codeaffine.eclipse.ui.test</module>
+    <module>../com.codeaffine.eclipse.ui.swt.theme</module>
+    <module>../com.codeaffine.eclipse.ui.swt.theme.test</module>
+
+    <!-- OSGi -->
+    <module>../com.codeaffine.osgi.test.util.feature</module>
+    
+    <module>../com.codeaffine.osgi.test.util</module>
+    <module>../com.codeaffine.osgi.test.util.test</module>
 
     <!-- Workflow -->
     <module>../com.codeaffine.workflow.feature</module>
@@ -78,7 +87,7 @@
 
   <build>
     <plugins>
-
+      
 			<plugin>
 			   <groupId>org.eclipse.tycho</groupId>
 			   <artifactId>target-platform-configuration</artifactId>
@@ -89,7 +98,7 @@
 			            <groupId>com.codeaffine.xiliary</groupId>
 			            <artifactId>com.codeaffine.xiliary.parent</artifactId>
                   <version>0.1.0-SNAPSHOT</version>
-                  <classifier>eclipse-4.4</classifier>
+                  <classifier>eclipse-4.5</classifier>
 			         </artifact>
           	</target>
             <includePackedArtifacts>true</includePackedArtifacts>
@@ -131,7 +140,7 @@
         <artifactId>tycho-surefire-plugin</artifactId>
         <version>${tycho-version}</version>
         <configuration>
-          <argLine>-Xmx512m -XX:MaxPermSize=128M</argLine>
+          <argLine>-Xmx512m</argLine>
           <useUIHarness>true</useUIHarness>
           <appArgLine>-nl en -consolelog -registryMultiLanguage</appArgLine>
           <includes>
@@ -172,29 +181,6 @@
           <defaultP2Metadata>false</defaultP2Metadata>
         </configuration>
       </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>1.11</version>
-        <configuration>
-          <signature>
-            <groupId>org.codehaus.mojo.signature</groupId>
-            <artifactId>java16</artifactId>
-            <version>1.1</version>
-          </signature>
-        </configuration>
-        <executions>
-          <execution>
-            <id>ensure-java-1.6-class-library</id>
-            <phase>test</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
     </plugins>
   </build>
 

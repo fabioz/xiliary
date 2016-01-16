@@ -1,9 +1,11 @@
 package com.codeaffine.eclipse.swt.widget.scrollable;
 
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Scrollable;
+
+import com.codeaffine.eclipse.swt.widget.scrollable.context.AdaptionContext;
 
 class TestLayoutFactory implements LayoutFactory<Scrollable> {
 
@@ -14,7 +16,7 @@ class TestLayoutFactory implements LayoutFactory<Scrollable> {
   }
 
   @Override
-  public Layout create( Composite parent, Scrollable scrollable ) {
+  public Layout create( AdaptionContext<Scrollable> context ) {
     return expected;
   }
 
@@ -51,6 +53,34 @@ class TestLayoutFactory implements LayoutFactory<Scrollable> {
 
   @Override
   public Color getThumbColor() {
+    return null;
+  }
+
+  @Override
+  public ScrollBar getVerticalBarAdapter() {
+    return null;
+  }
+
+  @Override
+  public ScrollBar getHorizontalBarAdapter() {
+    return null;
+  }
+
+  @Override
+  public void setBackgroundColor( Color color ) {
+  }
+
+  @Override
+  public Color getBackgroundColor() {
+    return null;
+  }
+
+  @Override
+  public void setDemeanor( Demeanor demeanor ) {
+  }
+
+  @Override
+  public Demeanor getDemeanor() {
     return null;
   }
 }

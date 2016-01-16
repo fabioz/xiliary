@@ -1,6 +1,7 @@
 package com.codeaffine.eclipse.swt.widget.scrollbar;
 
 import static com.codeaffine.eclipse.swt.layout.FormDatas.attach;
+import static com.codeaffine.eclipse.swt.util.ReadAndDispatch.ERROR_BOX_HANDLER;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
@@ -25,7 +26,7 @@ import com.codeaffine.eclipse.swt.util.ReadAndDispatch;
 
 public class FlatScrollBarDemo {
 
-  private static final int MARGIN = Direction.BAR_BREADTH - Direction.CLEARANCE + 1;
+  private static final int MARGIN = FlatScrollBar.BAR_BREADTH - Direction.CLEARANCE + 1;
 
   @Rule public final DisplayHelper displayHelper = new DisplayHelper();
 
@@ -48,7 +49,7 @@ public class FlatScrollBarDemo {
     Composite parent = new Composite( shell, SWT.NONE );
     new FlatScrollBarDemo().createWithSlider( parent );
     shell.setBounds( 250, 200, 200, 300 );
-    new ReadAndDispatch().spinLoop( shell );
+    new ReadAndDispatch( ERROR_BOX_HANDLER ).spinLoop( shell );
   }
 
   void create( final Composite parent ) {
@@ -62,7 +63,7 @@ public class FlatScrollBarDemo {
     label.setText( LoremIpsum.PARAGRAPHS );
     label.pack();
 
-    final int slideWidth = Direction.BAR_BREADTH;
+    final int slideWidth = FlatScrollBar.BAR_BREADTH;
     attach( hScroll ).toLeft().toBottom().toRight( slideWidth + MARGIN ).withHeight( slideWidth );
     attach( vScroll ).toRight().toTop().toBottom( slideWidth + MARGIN ).withWidth( slideWidth );
     attach( content ).toLeft().toTop().toBottom( MARGIN ).toRight( MARGIN );

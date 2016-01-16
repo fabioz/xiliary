@@ -6,14 +6,15 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Table;
 
+import com.codeaffine.eclipse.swt.widget.scrollable.context.AdaptionContext;
 import com.codeaffine.eclipse.swt.widget.scrollbar.FlatScrollBar;
 
 class TableVerticalSelectionListener extends SelectionAdapter {
 
   private final Table table;
 
-  TableVerticalSelectionListener( Table table ) {
-    this.table = table;
+  TableVerticalSelectionListener( AdaptionContext<Table> context ) {
+    this.table = context.getScrollable().getControl();
   }
 
   @Override

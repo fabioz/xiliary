@@ -12,25 +12,31 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import com.codeaffine.eclipse.swt.test.util.DisplayHelper;
-import com.codeaffine.eclipse.swt.widget.scrollable.TreeLayoutFactory.TreeLayoutContextFactory;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.AdaptionContext;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.ScrollableControl;
 
 public class PreferredWidthComputerTest {
 
   @Rule public final DisplayHelper displayHelper = new DisplayHelper();
 
+  private AdaptionContext<Tree> layoutContext;
   private PreferredWidthComputer computer;
   private Tree tree;
+
 
   @Before
   public void setUp() {
     Shell shell = createShell( displayHelper );
     tree = createTree( shell, 6, 4 );
-    computer = new PreferredWidthComputer( new TreeLayoutContextFactory( tree ) );
+    layoutContext = new AdaptionContext<>( shell, new ScrollableControl<>( tree ) );
+    computer = new PreferredWidthComputer( layoutContext );
     shell.open();
   }
 
   @Test
   public void compute() {
+    layoutContext.updatePreferredSize();
+
     int actual = computer.compute();
 
     assertThat( actual ).isEqualTo( preferredWidth() );
@@ -39,6 +45,7 @@ public class PreferredWidthComputerTest {
   @Test
   public void computeIfVerticalScrollBarVisible() {
     expandRootLevelItems( tree );
+    layoutContext.updatePreferredSize();
 
     int actual = computer.compute();
 
@@ -46,11 +53,12 @@ public class PreferredWidthComputerTest {
   }
 
   private int preferredWidth() {
-    LayoutContext context = new LayoutContext( tree, tree.getItemHeight() );
+    AdaptionContext<?> context = layoutContext.newContext( tree.getItemHeight() );
     return context.getPreferredSize().x + context.getOffset() * 2;
   }
 
   private int overlayAdjustment() {
-    return preferredWidth() + new LayoutContext( tree, tree.getItemHeight() ).getVerticalBarOffset();
+    AdaptionContext<?> context = layoutContext.newContext( tree.getItemHeight() );
+    return preferredWidth() + context.getVerticalBarOffset();
   }
 }

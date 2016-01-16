@@ -17,10 +17,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.codeaffine.eclipse.swt.test.util.DisplayHelper;
-import com.codeaffine.eclipse.swt.widget.scrollable.TreeLayoutFactory.TreeLayoutContextFactory;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.AdaptionContext;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.ScrollableControl;
 
 @RunWith( Parameterized.class )
 public class VisibilityTest {
@@ -36,22 +38,21 @@ public class VisibilityTest {
   @Rule
   public final DisplayHelper displayHelper = new DisplayHelper();
 
-  private final int orientation;
+  @Parameter
+  public int orientation;
 
+  private AdaptionContext<Tree> context;
   private Visibility visibility;
   private Shell shell;
   private Tree tree;
-
-  public VisibilityTest( int orientation ) {
-    this.orientation = orientation;
-  }
 
   @Before
   public void setUp() {
     shell = createShell( displayHelper, SWT.RESIZE );
     tree = createTree( shell, 2, 4 );
+    context = new AdaptionContext<>( shell, new ScrollableControl<>( tree ) );
     shell.open();
-    visibility = createVisibility();
+    visibility = new Visibility( orientation, context );
   }
 
   @Test
@@ -77,6 +78,7 @@ public class VisibilityTest {
     shell.setSize( 200, 100 );
     expandRootLevelItems( tree );
     expandTopBranch( tree );
+    context.updatePreferredSize();
     visibility.update();
 
     boolean actual = visibility.isVisible();
@@ -96,6 +98,7 @@ public class VisibilityTest {
     shell.setSize( 200, 100 );
     expandRootLevelItems( tree );
     expandTopBranch( tree );
+    context.updatePreferredSize();
 
     boolean actual = visibility.hasChanged();
 
@@ -113,14 +116,5 @@ public class VisibilityTest {
     boolean actual = visibility.hasChanged();
 
     assertThat( actual ).isFalse();
-  }
-
-  private Visibility createVisibility() {
-    TreeLayoutContextFactory factory = new TreeLayoutContextFactory( tree );
-    Visibility result = new Visibility( tree.getHorizontalBar(), factory );
-    if( ( orientation & SWT.VERTICAL ) > 0  ) {
-      result = new Visibility( tree.getVerticalBar(), factory );
-    }
-    return result;
   }
 }
