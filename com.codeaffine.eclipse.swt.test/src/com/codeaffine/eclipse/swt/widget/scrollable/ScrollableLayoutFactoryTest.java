@@ -1,10 +1,15 @@
 package com.codeaffine.eclipse.swt.widget.scrollable;
 
+import static com.codeaffine.eclipse.swt.test.util.ShellHelper.createShell;
+import static com.codeaffine.eclipse.swt.widget.scrollable.Demeanor.EXPAND_SCROLL_BAR_ON_MOUSE_OVER;
+import static com.codeaffine.eclipse.swt.widget.scrollable.Demeanor.FIXED_SCROLL_BAR_BREADTH;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Layout;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Scrollable;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -13,7 +18,8 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import com.codeaffine.eclipse.swt.test.util.DisplayHelper;
-import com.codeaffine.eclipse.swt.test.util.ShellHelper;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.AdaptionContext;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.ScrollableControl;
 
 public class ScrollableLayoutFactoryTest {
 
@@ -21,16 +27,18 @@ public class ScrollableLayoutFactoryTest {
   public final DisplayHelper displayHelper = new DisplayHelper();
 
   private ScrollableLayoutFactorySpy factorySpy;
+  private AdaptionContext<Scrollable> context;
   private Scrollable scrollable;
   private Layout layout;
   private Shell shell;
 
   @Before
   public void setUp() {
-    shell = ShellHelper.createShell( displayHelper );
-    scrollable = new Text( shell, SWT.MULTI );
+    shell = createShell( displayHelper );
+    scrollable = new Text( shell, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL );
     factorySpy = new ScrollableLayoutFactorySpy();
-    layout = factorySpy.create( shell, scrollable );
+    context = new AdaptionContext<>( shell, new ScrollableControl<>( scrollable ) );
+    layout = factorySpy.create( context );
   }
 
   @Test
@@ -78,7 +86,7 @@ public class ScrollableLayoutFactoryTest {
 
   @Test
   public void setIncrementColor() {
-    Color expected = displayHelper.getDisplay().getSystemColor( SWT.COLOR_BLACK );
+    Color expected = displayHelper.getSystemColor( SWT.COLOR_BLACK );
 
     factorySpy.setIncrementColor( expected );
 
@@ -89,7 +97,7 @@ public class ScrollableLayoutFactoryTest {
 
   @Test
   public void setPageIncrementColor() {
-    Color expected = displayHelper.getDisplay().getSystemColor( SWT.COLOR_BLACK );
+    Color expected = displayHelper.getSystemColor( SWT.COLOR_BLACK );
 
     factorySpy.setPageIncrementColor( expected );
 
@@ -100,12 +108,63 @@ public class ScrollableLayoutFactoryTest {
 
   @Test
   public void setThumbColor() {
-    Color expected = displayHelper.getDisplay().getSystemColor( SWT.COLOR_BLACK );
+    Color expected = displayHelper.getSystemColor( SWT.COLOR_BLACK );
 
     factorySpy.setThumbColor( expected );
 
     assertThat( factorySpy.getHorizontal().getThumbColor() ).isEqualTo( expected );
     assertThat( factorySpy.getVertical().getThumbColor() ).isEqualTo( expected );
     assertThat( factorySpy.getThumbColor() ).isEqualTo( expected );
+  }
+
+  @Test
+  public void setBackgroundColor() {
+    Color expected = displayHelper.getSystemColor( SWT.COLOR_BLACK );
+
+    factorySpy.setBackgroundColor( expected );
+
+    assertThat( factorySpy.getHorizontal().getBackground() ).isEqualTo( expected );
+    assertThat( factorySpy.getVertical().getBackground() ).isEqualTo( expected );
+    assertThat( factorySpy.getHorizontal().getParent().getBackground() ).isEqualTo( expected );
+    assertThat( factorySpy.getBackgroundColor() ).isEqualTo( expected );
+    assertThat( factorySpy.getCornerOverlay().getBackground() ).isEqualTo( expected );
+  }
+
+  @Test
+  public void getDemeanor() {
+    Demeanor actual = factorySpy.getDemeanor();
+
+    assertThat( actual ).isSameAs( EXPAND_SCROLL_BAR_ON_MOUSE_OVER );
+    assertThat( actual ).isSameAs( context.get( Demeanor.class ) );
+  }
+
+  @Test
+  public void setDemeanor() {
+    factorySpy.setDemeanor( FIXED_SCROLL_BAR_BREADTH );
+
+    Demeanor actual = factorySpy.getDemeanor();
+
+    assertThat( actual ).isSameAs( FIXED_SCROLL_BAR_BREADTH );
+    assertThat( actual ).isSameAs( context.get( Demeanor.class ) );
+  }
+
+  @Test
+  public void getHorizontalBarAdapter() {
+    Point expected = new Point( 100, 200 );
+    factorySpy.getHorizontal().setSize( expected );
+
+    ScrollBar actual = factorySpy.getHorizontalBarAdapter();
+
+    assertThat( actual.getSize() ).isEqualTo( expected );
+  }
+
+  @Test
+  public void getVerticalBarAdapter() {
+    Point expected = new Point( 100, 200 );
+    factorySpy.getVertical().setSize( expected );
+
+    ScrollBar actual = factorySpy.getVerticalBarAdapter();
+
+    assertThat( actual.getSize() ).isEqualTo( expected );
   }
 }

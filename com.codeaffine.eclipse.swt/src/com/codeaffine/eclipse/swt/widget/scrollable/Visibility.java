@@ -1,25 +1,26 @@
 package com.codeaffine.eclipse.swt.widget.scrollable;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.ScrollBar;
+
+import com.codeaffine.eclipse.swt.widget.scrollable.context.AdaptionContext;
 
 class Visibility {
 
-  private final LayoutContextFactory contextFactory;
-  private final ScrollBar scrollBar;
+  private final AdaptionContext<?> context;
+  private final int orientation;
 
   private boolean visibility;
 
-  Visibility( ScrollBar scrollBar, LayoutContextFactory contextFactory ) {
-    this.scrollBar = scrollBar;
-    this.contextFactory = contextFactory;
+  Visibility( int orientation, AdaptionContext<?> context ) {
+    this.orientation = orientation;
+    this.context = context;
   }
 
   boolean hasChanged() {
     return visibility != isScrollBarVisible();
   }
 
-   void update() {
+  void update() {
     visibility = isScrollBarVisible();
   }
 
@@ -28,9 +29,9 @@ class Visibility {
   }
 
   private boolean isScrollBarVisible() {
-    LayoutContext context = contextFactory.create();
+    AdaptionContext<?> context = this.context.newContext();
     boolean result = context.isHorizontalBarVisible();
-    if( ( scrollBar.getStyle() & SWT.VERTICAL ) > 0 ) {
+    if( orientation == SWT.VERTICAL ) {
       result = context.isVerticalBarVisible();
     }
     return result;

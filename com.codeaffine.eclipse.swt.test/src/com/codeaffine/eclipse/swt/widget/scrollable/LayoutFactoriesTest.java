@@ -21,6 +21,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.codeaffine.eclipse.swt.test.util.DisplayHelper;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.AdaptionContext;
+import com.codeaffine.eclipse.swt.widget.scrollable.context.ScrollableControl;
 import com.codeaffine.eclipse.swt.widget.scrollbar.FlatScrollBar;
 
 @RunWith( Parameterized.class )
@@ -56,7 +58,8 @@ public class LayoutFactoriesTest {
     shell = createShell( displayHelper, SWT.RESIZE );
     flatScrollBarControl = new Composite( shell, SWT.NONE );
     scrollable = scrollableFactory.create( flatScrollBarControl );
-    layout = layoutFactory.create( flatScrollBarControl, scrollable );
+    layout = layoutFactory.create( new AdaptionContext<>( flatScrollBarControl,
+                                   new ScrollableControl<>( scrollable ) ) );
     shell.open();
   }
 

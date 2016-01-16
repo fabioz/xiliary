@@ -6,7 +6,7 @@ function error_exit
   exit 1
 }
 
-if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && ( [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_BRANCH" == "development" ]); then
   echo -e "Starting to deploy to gh-pages\n"
 
   # create and cd into temporary deployment work directory
@@ -18,12 +18,25 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; th
   git config --global user.name "Travis Deployer"
   git clone --quiet --branch=gh-pages https://fappel:${GH_TOKEN}@github.com/fappel/xiliary.git . > /dev/null 2>&1 || error_exit "Error cloning gh-pages"
 
-  # clean the repository directory, then copy the build result into it
-  git rm -rf ./*
-  cp -rf ../com.codeaffine.xiliary.releng/repository/target/repository/* ./
+
+  # clean the repository directory, then copy the build result into it (if master branch)
+  if [ "$TRAVIS_BRANCH" == "master" ]; then
+    git rm -rf ./*
+    cp -rf ../com.codeaffine.xiliary.releng/repository/target/repository/* ./
+  fi
+  
+  # clean the development repository directory, then copy the build result into it (if development branch)
+  if [ "$TRAVIS_BRANCH" == "development" ]; then
+    if [ ! -d development ]; then
+      mkdir development
+    fi
+    cd development
+    rm -rf ./*
+    cp -rf ../../com.codeaffine.xiliary.releng/repository/target/repository/* ./  
+  fi
   
   # add, commit and push files
-  git add -f .
+  git add -f -A
   git commit -m "[ci skip] Deploy Travis build #$TRAVIS_BUILD_NUMBER to gh-pages"
   git push -fq origin gh-pages > /dev/null 2>&1 || error_exit "Error uploading the build result to gh-pages"
 

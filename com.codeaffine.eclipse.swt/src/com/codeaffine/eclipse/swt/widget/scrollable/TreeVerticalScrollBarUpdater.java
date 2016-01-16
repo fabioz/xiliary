@@ -6,15 +6,18 @@ import java.util.List;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 
+import com.codeaffine.eclipse.swt.widget.scrollable.context.ScrollableControl;
 import com.codeaffine.eclipse.swt.widget.scrollbar.FlatScrollBar;
 
 class TreeVerticalScrollBarUpdater implements VerticalScrollBarUpdater {
 
+  private final VerticalScrollbarConfigurationBuffer scrollbarConfiguration;
   private final TreeItemCollector treeItemCollector;
   private final FlatScrollBar scrollBar;
   private final Tree tree;
 
   TreeVerticalScrollBarUpdater( Tree tree, FlatScrollBar scrollbar ) {
+    this.scrollbarConfiguration = new VerticalScrollbarConfigurationBuffer( new ScrollableControl<>( tree ) );
     this.treeItemCollector = new TreeItemCollector( tree );
     this.scrollBar = scrollbar;
     this.tree = tree;
@@ -22,6 +25,13 @@ class TreeVerticalScrollBarUpdater implements VerticalScrollBarUpdater {
 
   @Override
   public void update() {
+    if( scrollbarConfiguration.hasChanged() ) {
+      updateScrollbar();
+    }
+    scrollbarConfiguration.update();
+  }
+
+  private void updateScrollbar() {
     List<TreeItem> visibleItems = treeItemCollector.collectVisibleItems();
     scrollBar.setIncrement( SELECTION_RASTER_SMOOTH_FACTOR );
     scrollBar.setMaximum( calculateMaximum( visibleItems ) );
@@ -36,10 +46,19 @@ class TreeVerticalScrollBarUpdater implements VerticalScrollBarUpdater {
   }
 
   int calculateThumb() {
-    int height = tree.getClientArea().height;
+    int height = calculateHeight();
     int ratio = height / tree.getItemHeight();
     return SELECTION_RASTER_SMOOTH_FACTOR * ratio;
   }
+
+  int calculateHeight() {
+    int result = tree.getClientArea().height;
+    if( tree.getHeaderVisible() ) {
+      result -= tree.getHeaderHeight();
+    }
+    return result;
+  }
+
 
   private int calculateSelection( List<TreeItem> visibleItems ) {
     TreeItem topItem = tree.getTopItem();
