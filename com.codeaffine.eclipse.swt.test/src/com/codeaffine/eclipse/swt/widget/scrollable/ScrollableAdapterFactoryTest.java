@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.widget.scrollable;
 
 import static com.codeaffine.eclipse.swt.test.util.ShellHelper.createShell;
@@ -7,8 +17,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Scrollable;
@@ -48,7 +61,7 @@ public class ScrollableAdapterFactoryTest {
   public void create() {
     Tree tree = createTree( shell, 1, 1 );
 
-    TreeAdapter actual = factory.create( tree, TreeAdapter.class );
+    TreeAdapter actual = factory.create( tree, TreeAdapter.class ).get();
 
     assertThat( actual.getParent() ).isSameAs( shell );
     assertThat( tree.getParent() ).isSameAs( shell );
@@ -57,10 +70,20 @@ public class ScrollableAdapterFactoryTest {
 
   @Test
   @ConditionalIgnore( condition = GtkPlatform.class )
+  public void createWithNoScrollStyle() {
+    Tree tree = createTree( shell, 1, 1, SWT.NO_SCROLL );
+
+    Optional<TreeAdapter> adapter = factory.create( tree, TreeAdapter.class );
+
+    assertThat( adapter.isPresent() ).isFalse();
+  }
+
+  @Test
+  @ConditionalIgnore( condition = GtkPlatform.class )
   public void createForTreeWithBorder() {
     Tree tree = new Tree( shell, SWT.BORDER );
 
-    TreeAdapter actual = factory.create( tree, TreeAdapter.class );
+    TreeAdapter actual = factory.create( tree, TreeAdapter.class ).get();
 
     assertThat( actual.getStyle() & SWT.BORDER ).isEqualTo( SWT.BORDER );
   }
@@ -72,7 +95,7 @@ public class ScrollableAdapterFactoryTest {
     Tree tree = createTree( shell, 1, 1 );
     createChild();
 
-    TreeAdapter actual = factory.create( tree, TreeAdapter.class );
+    TreeAdapter actual = factory.create( tree, TreeAdapter.class ).get();
     assertThat( actual  ).isSameAs( shell.getChildren()[ 1 ] );
   }
 
@@ -125,6 +148,7 @@ public class ScrollableAdapterFactoryTest {
   }
 
   private AdaptionContext<Scrollable> createLayoutContext() {
-    return new AdaptionContext<>( shell, new ScrollableControl<>( createTree( shell, 1, 1 ) ) );
+    Composite adapter = new Composite( shell, SWT.NONE );
+    return new AdaptionContext<>( adapter, new ScrollableControl<>( createTree( shell, 1, 1 ) ) );
   }
 }

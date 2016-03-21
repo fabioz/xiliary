@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.widget.scrollable;
 
 import static com.codeaffine.eclipse.swt.test.util.DisplayHelper.flushPendingEvents;
@@ -6,6 +16,8 @@ import static com.codeaffine.eclipse.swt.widget.scrollable.TreeHelper.createTree
 import static com.codeaffine.eclipse.swt.widget.scrollable.TreeHelper.expandTopBranch;
 import static com.codeaffine.test.util.lang.ThrowableCaptor.thrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Optional;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
@@ -49,7 +61,7 @@ public class TreeAdapterTest {
     tree = createTree( shell, 4, 6 );
     layoutData = new Object();
     tree.setLayoutData( layoutData );
-    adapter = adapterFactory.create( tree, TreeAdapter.class );
+    adapter = adapterFactory.create( tree, TreeAdapter.class ).get();
   }
 
   @Test
@@ -111,7 +123,7 @@ public class TreeAdapterTest {
   public void changeTreeBounds() {
     openShellWithoutLayout();
     tree = createTree( shell, 1, 1 );
-    adapter = adapterFactory.create( tree, TreeAdapter.class );
+    adapter = adapterFactory.create( tree, TreeAdapter.class ).get();
     waitForReconciliation();
 
     tree.setBounds( expectedBounds() );
@@ -231,6 +243,15 @@ public class TreeAdapterTest {
     assertThat( tree.getItemHeight() ).isEqualTo( expectedHeight );
   }
 
+  @Test
+  public void adaptWithoutScrollBarStyle() {
+    openShellWithoutLayout();
+    tree = new Tree( shell, SWT.NO_SCROLL );
+    Optional<TreeAdapter> adapter = adapterFactory.create( tree, TreeAdapter.class );
+
+    assertThat( adapter.isPresent() ).isFalse();
+  }
+
   private int configureTableItemHeightAdjuster() {
     int result = 24;
     tree.addListener( SWT.MeasureItem, evt -> evt.height = result );
@@ -250,7 +271,7 @@ public class TreeAdapterTest {
   }
 
   private void waitForReconciliation() {
-    new ReadAndDispatch().spinLoop( shell, WatchDog.DELAY * 3 );
+    new ReadAndDispatch().spinLoop( shell, WatchDog.DELAY * 6 );
   }
 
   private Rectangle expectedBounds() {

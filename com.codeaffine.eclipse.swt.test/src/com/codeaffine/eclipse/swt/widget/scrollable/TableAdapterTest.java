@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.widget.scrollable;
 
 import static com.codeaffine.eclipse.swt.test.util.ShellHelper.createShell;
@@ -6,6 +16,8 @@ import static com.codeaffine.eclipse.swt.widget.scrollable.TableHelper.createTab
 import static com.codeaffine.eclipse.swt.widget.scrollable.TableHelper.createTableInSingleCellGridLayout;
 import static com.codeaffine.test.util.lang.ThrowableCaptor.thrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Optional;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
@@ -48,7 +60,7 @@ public class TableAdapterTest {
     table = createTable( shell, 10 );
     layoutData = new Object();
     table.setLayoutData( layoutData );
-    adapter = adapterFactory.create( table, TableAdapter.class );
+    adapter = adapterFactory.create( table, TableAdapter.class ).get();
   }
 
   @Test
@@ -110,7 +122,7 @@ public class TableAdapterTest {
   public void changeTableBounds() {
     openShellWithoutLayout();
     table = new Table( shell, SWT.NONE );
-    adapter = adapterFactory.create( table, TableAdapter.class );
+    adapter = adapterFactory.create( table, TableAdapter.class ).get();
     waitForReconciliation();
 
     table.setBounds( expectedBounds() );
@@ -232,6 +244,15 @@ public class TableAdapterTest {
 
     TableAdapter actual = ( TableAdapter )popup.getChildren()[ 0 ];
     assertThat( actual.getVerticalBar().isVisible() ).isFalse();
+  }
+
+  @Test
+  public void adaptWithoutScrollBarStyle() {
+    openShellWithoutLayout();
+    table = new Table( shell, SWT.NO_SCROLL );
+    Optional<TableAdapter> adapter = adapterFactory.create( table, TableAdapter.class );
+
+    assertThat( adapter.isPresent() ).isFalse();
   }
 
   private int configureTableItemHeightAdjuster() {

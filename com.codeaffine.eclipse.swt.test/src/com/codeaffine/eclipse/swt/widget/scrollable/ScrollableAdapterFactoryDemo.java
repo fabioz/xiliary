@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.widget.scrollable;
 
 import static com.codeaffine.eclipse.swt.test.util.ShellHelper.computeTrim;
@@ -19,6 +29,7 @@ import java.util.stream.Stream;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -94,16 +105,30 @@ public class ScrollableAdapterFactoryDemo {
   }
 
   @Test
-  public void treeDemoWithCTabFolder() {
+  public void scrollableDemoWithCTabFolder() {
     CTabFolder container = new CTabFolder( shell, SWT.BOTTOM | SWT.FLAT );
+
     Tree tree = new TestTreeFactory().create( container );
     adapt( tree, TreeAdapter.class );
-    CTabItem item = new CTabItem( container, SWT.NONE, 0 );
-    item.setText( "item" );
-    item.setControl( tree );
-    shell.open();
+    CTabItem treeItem = new CTabItem( container, SWT.NONE, 0 );
+    treeItem.setText( "Tree" );
+    treeItem.setControl( tree );
     expandRootLevelItems( tree );
     expandTopBranch( tree );
+
+    Table table = new TestTableFactory().create( container );
+    adapt( table, TableAdapter.class );
+    CTabItem tableItem = new CTabItem( container, SWT.NONE, 1 );
+    tableItem.setText( "Table" );
+    tableItem.setControl( table );
+
+    StyledText styledText = new TestStyledTextFactory().create( container );
+    adapt( styledText, StyledTextAdapter.class );
+    CTabItem styledTextItem = new CTabItem( container, SWT.NONE, 2 );
+    styledTextItem.setText( "StyledText" );
+    styledTextItem.setControl( styledText );
+
+    shell.open();
     spinLoop();
   }
 
@@ -157,6 +182,13 @@ public class ScrollableAdapterFactoryDemo {
     Table table = createVirtualTableWithOwnerDrawnItems( shell, itemList );
     adapt( table, TableAdapter.class );
     table.setItemCount( itemList.getItems().length );
+    shell.open();
+    spinLoop();
+  }
+
+  @Test
+  public void styledTextDemo() {
+    adapt( new TestStyledTextFactory().create( shell ), StyledTextAdapter.class );
     shell.open();
     spinLoop();
   }

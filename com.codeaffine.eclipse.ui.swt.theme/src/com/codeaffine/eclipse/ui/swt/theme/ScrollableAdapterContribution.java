@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.ui.swt.theme;
 
 import static com.codeaffine.eclipse.ui.swt.theme.AttributeApplicator.attach;
@@ -11,6 +21,7 @@ import static com.codeaffine.eclipse.ui.swt.theme.AttributeSetter.FLAT_SCROLLBAR
 import static com.codeaffine.eclipse.ui.swt.theme.AttributeSetter.INCREMENT_LENGTH_PREFERENCE_SETTER;
 import static com.codeaffine.eclipse.ui.swt.theme.ControlElements.extractControl;
 import static com.codeaffine.eclipse.ui.swt.theme.ControlElements.extractScrollable;
+import static com.codeaffine.eclipse.ui.swt.theme.ControlElements.isControlElement;
 import static java.lang.Boolean.parseBoolean;
 
 import java.util.Optional;
@@ -18,7 +29,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.e4.ui.css.core.dom.properties.ICSSPropertyHandler;
 import org.eclipse.e4.ui.css.core.engine.CSSEngine;
-import org.eclipse.e4.ui.css.swt.dom.ControlElement;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Scrollable;
 import org.eclipse.swt.widgets.Table;
@@ -28,6 +39,7 @@ import org.w3c.dom.css.CSSValue;
 import com.codeaffine.eclipse.swt.widget.scrollable.ScrollableAdapterFactory;
 import com.codeaffine.eclipse.swt.widget.scrollable.ScrollableAdapterFactory.Adapter;
 import com.codeaffine.eclipse.swt.widget.scrollable.ScrollbarStyle;
+import com.codeaffine.eclipse.swt.widget.scrollable.StyledTextAdapter;
 import com.codeaffine.eclipse.swt.widget.scrollable.TableAdapter;
 import com.codeaffine.eclipse.swt.widget.scrollable.TreeAdapter;
 
@@ -49,6 +61,7 @@ public class ScrollableAdapterContribution implements ICSSPropertyHandler {
   static final TypePair<? extends Scrollable, ? extends Adapter>[] SUPPORTED_ADAPTERS = new TypePair[] {
     new TypePair<>( Tree.class, TreeAdapter.class ),
     new TypePair<>( Table.class, TableAdapter.class ),
+    new TypePair<>( StyledText.class, StyledTextAdapter.class ),
   };
 
   private final ScrollbarPreference incrementButtonLengthPreference;
@@ -86,10 +99,6 @@ public class ScrollableAdapterContribution implements ICSSPropertyHandler {
 
   private static boolean mustApply( Object element ) {
     return isControlElement( element ) && tryFindTypePair( extractControl( element ) ).isPresent();
-  }
-
-  private static boolean isControlElement( Object element ) {
-    return element instanceof ControlElement;
   }
 
   @SuppressWarnings("rawtypes")
@@ -157,10 +166,13 @@ public class ScrollableAdapterContribution implements ICSSPropertyHandler {
     if( !factory.isAdapted( scrollable ) && parseBoolean( value.getCssText() ) ) {
       TypePair<? extends Scrollable, ? extends Adapter> typePair = lookupTypePair( scrollable );
       Scrollable scrollableExtension = typePair.scrollableType.cast( scrollable );
-      ScrollbarStyle result = ( ScrollbarStyle )factory.create( scrollableExtension, typePair.adapterType );
-      attach( scrollable, result );
-      incrementButtonLengthPreference.apply( result, INCREMENT_LENGTH_PREFERENCE_SETTER );
-      demeanorPreference.apply( result, DEMEANOR_PREFERENCE_SETTER );
+      Optional adapter = factory.create( scrollableExtension, typePair.adapterType );
+      if( adapter.isPresent() ) {
+        ScrollbarStyle result = ( ScrollbarStyle )adapter.get();
+        attach( scrollable, result );
+        incrementButtonLengthPreference.apply( result, INCREMENT_LENGTH_PREFERENCE_SETTER );
+        demeanorPreference.apply( result, DEMEANOR_PREFERENCE_SETTER );
+      }
     }
   }
 

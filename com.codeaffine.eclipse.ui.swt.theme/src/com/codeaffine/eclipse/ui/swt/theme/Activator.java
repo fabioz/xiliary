@@ -1,6 +1,14 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.ui.swt.theme;
-
-import static com.codeaffine.eclipse.ui.swt.theme.FontLoader.FONTS_DIRECTORY;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -10,19 +18,15 @@ public class Activator extends AbstractUIPlugin {
   private static Activator instance;
 
   private final ScrollbarPreferenceApplicator preferenceApplictor;
-  private final FontLoader fontLoader;
 
   public Activator() {
-    fontLoader = new FontLoader( FONTS_DIRECTORY );
     preferenceApplictor = new ScrollbarPreferenceApplicator();
-    new FontRegistryUpdater();
   }
 
   @Override
   public void start( BundleContext context ) throws Exception {
-    new Thread( () -> fontLoader.load( context ) ).start();
-    getPreferenceStore().addPropertyChangeListener( preferenceApplictor );
     instance = this;
+    getPreferenceStore().addPropertyChangeListener( preferenceApplictor );
   }
 
   @Override

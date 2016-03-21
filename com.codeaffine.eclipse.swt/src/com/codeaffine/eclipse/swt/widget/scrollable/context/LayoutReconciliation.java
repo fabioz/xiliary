@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.widget.scrollable.context;
 
 import static com.codeaffine.eclipse.swt.util.ControlReflectionUtil.$;
@@ -12,6 +22,7 @@ import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Scrollable;
 
 import com.codeaffine.eclipse.swt.util.ControlReflectionUtil;
@@ -26,6 +37,7 @@ class LayoutReconciliation {
     this.controlReflectionUtil = new ControlReflectionUtil();
     this.scrollable = scrollable;
     this.adapter = adapter;
+    registerSourceViewerRulerLayoutActorIfNeeded( scrollable, adapter );
   }
 
   void run() {
@@ -44,6 +56,19 @@ class LayoutReconciliation {
       }
       if( adapter.getParent() instanceof CTabFolder ) {
         reconcileCTabFolder();
+      }
+    }
+  }
+
+  private static void registerSourceViewerRulerLayoutActorIfNeeded(
+    ScrollableControl<? extends Scrollable> scrollable, Composite adapter )
+  {
+    Composite parent = adapter.getParent();
+    if( parent != null ) {
+      Layout layout = parent.getLayout();
+      String rulerLayoutTypeName = "org.eclipse.jface.text.source.SourceViewer$RulerLayout";
+      if( layout != null && layout.getClass().getName().equals( rulerLayoutTypeName ) ) {
+        parent.setLayout( new LayoutActor( layout, scrollable, adapter ) );
       }
     }
   }
@@ -106,6 +131,7 @@ class LayoutReconciliation {
     if( scrollable.isSameAs( item.getControl() ) ) {
       item.setControl( adapter );
       adapter.getParent().layout();
+      adapter.setVisible( true );
     }
   }
 

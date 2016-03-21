@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.util;
 
 import static com.codeaffine.eclipse.swt.testhelper.TestResources.PROTECTED_CLASS_NAME;
@@ -12,6 +22,8 @@ import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
 
+import org.eclipse.swt.accessibility.Accessible;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -21,7 +33,11 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import com.codeaffine.eclipse.swt.test.util.DisplayHelper;
+import com.codeaffine.eclipse.swt.test.util.SWTIgnoreConditions.GtkPlatform;
+import com.codeaffine.eclipse.swt.widget.scrollable.StyledTextAdapter;
 import com.codeaffine.eclipse.swt.widget.scrollable.TreeAdapter;
+import com.codeaffine.test.util.junit.ConditionalIgnoreRule;
+import com.codeaffine.test.util.junit.ConditionalIgnoreRule.ConditionalIgnore;
 
 public class ControlReflectionUtilTest {
 
@@ -30,8 +46,8 @@ public class ControlReflectionUtilTest {
   private static final String FIELD_NAME_PARENT = "parent";
   private static final String FIELD_NAME_COLUMN_COUNT = "columnCount";
 
-  @Rule
-  public final DisplayHelper displayHelper = new DisplayHelper();
+  @Rule public final ConditionalIgnoreRule conditionIgnoreRule = new ConditionalIgnoreRule();
+  @Rule public final DisplayHelper displayHelper = new DisplayHelper();
 
   private ControlReflectionUtil reflectionUtil;
 
@@ -90,6 +106,18 @@ public class ControlReflectionUtilTest {
     reflectionUtil.invoke( receiver, "showSelection" );
 
     verify( receiver ).showSelection();
+  }
+
+  @Test
+  @ConditionalIgnore( condition = GtkPlatform.class )
+  public void invokeOfReceiverExtensionMethod() {
+    StyledText receiver = reflectionUtil.newInstance( StyledTextAdapter.class );
+    reflectionUtil.setField( receiver, FIELD_NAME_DISPLAY, displayHelper.getDisplay() );
+
+    reflectionUtil.invoke( receiver, "initializeAccessible" );
+    Accessible actual = reflectionUtil.getField( receiver, "acc", Accessible.class );
+
+    assertThat( actual ).isNotNull();
   }
 
   @Test
@@ -194,6 +222,18 @@ public class ControlReflectionUtilTest {
   public void getFieldOfReceiver() {
     int expected = 10;
     Tree receiver = reflectionUtil.newInstance( Tree.class );
+    reflectionUtil.setField( receiver, FIELD_NAME_COLUMN_COUNT, expected );
+
+    int actual = reflectionUtil.getField( receiver, FIELD_NAME_COLUMN_COUNT, Integer.class );
+
+    assertThat( actual ).isEqualTo( expected );
+  }
+
+  @Test
+  @ConditionalIgnore( condition = GtkPlatform.class )
+  public void getFieldOfReceiverExtension() {
+    int expected = 10;
+    Tree receiver = reflectionUtil.newInstance( TreeAdapter.class );
     reflectionUtil.setField( receiver, FIELD_NAME_COLUMN_COUNT, expected );
 
     int actual = reflectionUtil.getField( receiver, FIELD_NAME_COLUMN_COUNT, Integer.class );

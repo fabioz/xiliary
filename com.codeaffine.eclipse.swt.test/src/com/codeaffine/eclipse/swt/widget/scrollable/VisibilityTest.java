@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.widget.scrollable;
 
 import static com.codeaffine.eclipse.swt.test.util.ShellHelper.createShell;
@@ -52,7 +62,7 @@ public class VisibilityTest {
     tree = createTree( shell, 2, 4 );
     context = new AdaptionContext<>( shell, new ScrollableControl<>( tree ) );
     shell.open();
-    visibility = new Visibility( orientation, context );
+    visibility = new Visibility( orientation );
   }
 
   @Test
@@ -79,7 +89,7 @@ public class VisibilityTest {
     expandRootLevelItems( tree );
     expandTopBranch( tree );
     context.updatePreferredSize();
-    visibility.update();
+    visibility.update( context.newContext() );
 
     boolean actual = visibility.isVisible();
 
@@ -88,7 +98,7 @@ public class VisibilityTest {
 
   @Test
   public void hasChanged() {
-    boolean actual = visibility.hasChanged();
+    boolean actual = visibility.hasChanged( context.newContext() );
 
     assertThat( actual ).isFalse();
   }
@@ -100,7 +110,7 @@ public class VisibilityTest {
     expandTopBranch( tree );
     context.updatePreferredSize();
 
-    boolean actual = visibility.hasChanged();
+    boolean actual = visibility.hasChanged( context.newContext() );
 
     assertThat( actual ).isTrue();
   }
@@ -111,9 +121,9 @@ public class VisibilityTest {
     expandRootLevelItems( tree );
     expandTopBranch( tree );
 
-    visibility.update();
+    visibility.update( context.newContext() );
 
-    boolean actual = visibility.hasChanged();
+    boolean actual = visibility.hasChanged( context.newContext() );
 
     assertThat( actual ).isFalse();
   }

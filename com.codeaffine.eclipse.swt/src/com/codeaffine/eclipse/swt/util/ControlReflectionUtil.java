@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.util;
 
 import static java.util.Arrays.asList;
@@ -9,7 +19,6 @@ import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import java.util.List;
 
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
 
 public class ControlReflectionUtil {
@@ -66,7 +75,7 @@ public class ControlReflectionUtil {
   }
 
   @SuppressWarnings("unchecked")
-  private Class<? extends Widget> defineClass( final String name ) {
+  private Class<? extends Widget> defineClass( String name ) {
     String path = name.replaceAll( "\\.", "/" ) + ".class";
     byte[] bytes = new ResourceLoader().load( path );
     ClassLoader loader = getClass().getClassLoader();
@@ -109,11 +118,17 @@ public class ControlReflectionUtil {
   private static Method getMethodInternal( Widget receiver, String methodName, Class<?> ... parameterTypes )
     throws NoSuchMethodException
   {
-    try {
-      return Control.class.getDeclaredMethod( methodName, parameterTypes );
-    } catch( NoSuchMethodException noReceiverMethod ) {
-      return receiver.getClass().getDeclaredMethod( methodName, parameterTypes );
-    }
+    Class<? extends Object> type = receiver.getClass();
+    do {
+      try {
+        return type.getDeclaredMethod( methodName, parameterTypes );
+      } catch( NoSuchMethodException noReceiverMethod ) {
+        if( type == Widget.class ) {
+          throw noReceiverMethod;
+        }
+        type = type.getSuperclass();
+      }
+    } while( true );
   }
 
   private static Object setFieldValue( Object receiver, String fieldName, Object value ) throws Exception {
@@ -130,15 +145,17 @@ public class ControlReflectionUtil {
   }
 
   private static Field getField( Object receiver, String fieldName ) throws NoSuchFieldException {
-    try {
-      return receiver.getClass().getDeclaredField( fieldName );
-    } catch( NoSuchFieldException noReceiverField ) {
+    Class<? extends Object> type = receiver.getClass();
+    do {
       try {
-        return Control.class.getDeclaredField( fieldName );
-      } catch( NoSuchFieldException noControlField ) {
-        return Widget.class.getDeclaredField( fieldName );
+        return type.getDeclaredField( fieldName );
+      } catch( NoSuchFieldException noReceiverField ) {
+        if( type == Widget.class ) {
+          throw noReceiverField;
+        }
+        type = type.getSuperclass();
       }
-    }
+    } while( true );
   }
 
   private static <T> T execute( Operator<T> operator ) {

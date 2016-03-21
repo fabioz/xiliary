@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.widget.scrollable.context;
 
 import org.eclipse.swt.SWT;
@@ -15,6 +25,7 @@ class BoundsReconciliation {
   private Rectangle newScrollableBounds;
   private boolean treeEvent;
   private int suspendCount;
+  private boolean moved;
 
   BoundsReconciliation( Composite adapter, ScrollableControl<? extends Scrollable> scrollable ) {
     this.adapter = adapter;
@@ -23,7 +34,7 @@ class BoundsReconciliation {
     updateBoundsBuffer();
   }
 
-  public void run() {
+  void run() {
     if( mustReconcile() ) {
       reconcile();
     }
@@ -53,17 +64,18 @@ class BoundsReconciliation {
     }
   }
 
-  void treeExpanded() {
+  private void treeExpanded() {
     treeEvent = true;
   }
 
-  void treeCollapsed() {
+  private void treeCollapsed() {
     treeEvent = true;
   }
 
   private void controlMoved() {
     if( !isSuspended() ) {
       newScrollableBounds = scrollable.getBounds();
+      flagScrollableAsMoved();
       if( mustWorkaroundScrollableWithBorderInitializations() ) {
         oldScrollableBounds = scrollable.getBounds();
       }
@@ -95,7 +107,18 @@ class BoundsReconciliation {
   }
 
   private void reconcile() {
+    if( hasScrollableBeenMoved() ) {
+      unflagScrollableAsMoved();
+      newScrollableBounds = computeScrollableBoundsWithLocationDelta();
+    }
     adapter.setBounds( newScrollableBounds );
+  }
+
+  private Rectangle computeScrollableBoundsWithLocationDelta() {
+    return new Rectangle( newScrollableBounds.x - oldScrollableBounds.x,
+                          newScrollableBounds.y - oldScrollableBounds.y,
+                          newScrollableBounds.width,
+                          newScrollableBounds.height );
   }
 
   private void updateBoundsBuffer() {
@@ -108,11 +131,23 @@ class BoundsReconciliation {
   }
 
   private void registerListeners( ScrollableControl<? extends Scrollable> scrollable ) {
-    scrollable.addListener( SWT.RESIZE, evt -> controlResized() );
     scrollable.addListener( SWT.Move, evt -> controlMoved() );
+    scrollable.addListener( SWT.Resize, evt -> controlResized() );
     if( scrollable.isInstanceof( Tree.class ) ) {
       scrollable.addListener( SWT.Collapse, evt -> treeCollapsed() );
       scrollable.addListener( SWT.Expand, evt -> treeExpanded() );
     }
+  }
+
+  private void flagScrollableAsMoved() {
+    moved = true;
+  }
+
+  private void unflagScrollableAsMoved() {
+    moved = false;
+  }
+
+  private boolean hasScrollableBeenMoved() {
+    return moved;
   }
 }

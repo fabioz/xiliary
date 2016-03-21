@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.widget.scrollable.context;
 
 import static java.lang.Integer.valueOf;
@@ -15,9 +25,11 @@ class SizeComputer {
   static final Point EMPTY_BUFFER_SIZE = new Point( 0, 0 );
 
   private final ScrollableControl<? extends Scrollable> scrollable;
+  private final PreferredSizeProvider preferredSizeProvider;
   private final Composite adapter;
 
   SizeComputer( ScrollableControl<? extends Scrollable> scrollable, Composite adapter ) {
+    this.preferredSizeProvider = new PreferredSizeProvider( scrollable );
     this.scrollable = scrollable;
     this.adapter = adapter;
   }
@@ -28,13 +40,14 @@ class SizeComputer {
   }
 
   void updatePreferredSize() {
-    Point computed = scrollable.computePreferredSize();
-    if( computed.x - scrollable.getVerticalBarSize().x == scrollable.getSize().x ) {
+//    Point preferredSize = scrollable.computePreferredSize();
+    Point preferredSize = preferredSizeProvider.getSize();
+    if( preferredSize.x - scrollable.getVerticalBarSize().x == scrollable.getSize().x ) {
       scrollable.setData( PREFERRED_SIZE, scrollable.getSize() );
     } else if( isVirtualAndOwnerDrawn() ) {
-      bestPreferredSizeGuessForVirtualAndOwnerDrawnScrollables( computed );
+      bestPreferredSizeGuessForVirtualAndOwnerDrawnScrollables( preferredSize );
     } else { // check possible improvement on non owner drawn scrollables: #28
-      bestPreferredlSizeGuessForOwnerDrawnScrollables( computed );
+      bestPreferredlSizeGuessForOwnerDrawnScrollables( preferredSize );
     }
   }
 

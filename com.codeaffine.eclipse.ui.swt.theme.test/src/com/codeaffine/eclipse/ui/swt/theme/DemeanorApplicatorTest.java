@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.ui.swt.theme;
 
 import static com.codeaffine.eclipse.ui.swt.theme.AttributeSetter.ADAPTER_DEMEANOR_SETTER;
@@ -20,6 +30,7 @@ import org.w3c.dom.css.CSSPrimitiveValue;
 
 import com.codeaffine.eclipse.swt.test.util.DisplayHelper;
 import com.codeaffine.eclipse.swt.test.util.SWTIgnoreConditions.GtkPlatform;
+import com.codeaffine.eclipse.swt.test.util.SWTIgnoreConditions.NonWindowsPlatform;
 import com.codeaffine.eclipse.swt.widget.scrollable.Demeanor;
 import com.codeaffine.eclipse.swt.widget.scrollable.ScrollbarStyle;
 import com.codeaffine.test.util.junit.ConditionalIgnoreRule;
@@ -47,7 +58,7 @@ public class DemeanorApplicatorTest {
   }
 
   @Test
-  @ConditionalIgnore( condition = GtkPlatform.class )
+  @ConditionalIgnore( condition = NonWindowsPlatform.class )
   public void apply() {
     ScrollbarStyle style = applicatorTestHelper.adapt();
 
@@ -57,7 +68,7 @@ public class DemeanorApplicatorTest {
   }
 
   @Test
-  @ConditionalIgnore( condition = GtkPlatform.class )
+  @ConditionalIgnore( condition = NonWindowsPlatform.class )
   public void applyTopLevelWindowAttribute() {
     String attribute = ADAPTER_DEMEANOR + TOP_LEVEL_WINDOW_SELECTOR;
     ScrollbarStyle style = applicatorTestHelper.adapt();
@@ -80,7 +91,7 @@ public class DemeanorApplicatorTest {
   }
 
   @Test
-  @ConditionalIgnore( condition = GtkPlatform.class )
+  @ConditionalIgnore( condition = NonWindowsPlatform.class )
   public void applyWithBuffering() {
     applicator.apply( scrollable, CSS_FIXED, ADAPTER_DEMEANOR, ADAPTER_DEMEANOR_SETTER );
     ScrollbarStyle style = applicatorTestHelper.adapt();
@@ -90,7 +101,7 @@ public class DemeanorApplicatorTest {
   }
 
   @Test
-  @ConditionalIgnore( condition = GtkPlatform.class )
+  @ConditionalIgnore( condition = NonWindowsPlatform.class )
   public void applyTopLevelWindowAttributeWithBuffering() {
     String attribute = ADAPTER_DEMEANOR + TOP_LEVEL_WINDOW_SELECTOR;
     applicator.apply( scrollable, CSS_FIXED, attribute, ADAPTER_DEMEANOR_SETTER );
@@ -130,7 +141,7 @@ public class DemeanorApplicatorTest {
   }
 
   @Test
-  @ConditionalIgnore( condition = GtkPlatform.class )
+  @ConditionalIgnore( condition = NonWindowsPlatform.class )
   public void applyDifferentValues() {
     ScrollbarStyle style = applicatorTestHelper.adapt();
 

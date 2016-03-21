@@ -1,9 +1,18 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.widget.scrollable.context;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
@@ -28,23 +37,24 @@ public class AdaptionContext<T extends Scrollable> {
   private final int offset;
 
   public AdaptionContext( Composite adapter, ScrollableControl<T> scrollable ) {
-    this( adapter, scrollable, 1, null, new HashMap<>() );
+    this( adapter, scrollable, 1, null, new SizeComputer( scrollable, adapter ), new HashMap<>() );
   }
 
   private AdaptionContext( Composite adapter,
                            ScrollableControl<T> scrollable,
                            int itemHeight,
                            Reconciliation reconciliation,
+                           SizeComputer sizeComputer,
                            Map<Class<?>, Object> attributes )
   {
     this.attributes = attributes;
-    this.sizeComputer = new SizeComputer( scrollable, adapter );
+    this.sizeComputer = sizeComputer;
     this.scrollbarVisibility = new ScrollbarVisibility( sizeComputer, scrollable, adapter.getClientArea(), itemHeight );
     this.reconciliation = reconciliation == null ? new Reconciliation( adapter, scrollable ) : reconciliation;
     this.verticalBarOffset = computeVerticalBarOffset( scrollable );
     this.offset = new OffsetComputer( scrollable ).compute();
     this.visibleArea = computeVisibleArea( adapter, scrollable );
-    this.borderWidth = getBorderWidth( scrollable );
+    this.borderWidth = scrollable.getBorderWidth();
     this.originOfScrollableOrdinates = new Point( visibleArea.x - borderWidth, visibleArea.y - borderWidth );
     this.scrollable = scrollable;
     this.adapter = adapter;
@@ -52,11 +62,11 @@ public class AdaptionContext<T extends Scrollable> {
   }
 
   public AdaptionContext<T> newContext( int itemHeight ) {
-    return new AdaptionContext<T>( adapter, scrollable, itemHeight, reconciliation, attributes );
+    return new AdaptionContext<T>( adapter, scrollable, itemHeight, reconciliation, sizeComputer, attributes );
   }
 
   public AdaptionContext<T> newContext() {
-    return new AdaptionContext<T>( adapter, scrollable, itemHeight, reconciliation, attributes );
+    return new AdaptionContext<T>( adapter, scrollable, itemHeight, reconciliation, sizeComputer, attributes );
   }
 
   public <A> void put( Class<A> key, A value ) {
@@ -131,13 +141,6 @@ public class AdaptionContext<T extends Scrollable> {
     return borderWidth;
   }
 
-  private static int getBorderWidth( ScrollableControl<? extends Scrollable> scrollable ) {
-    if( scrollable.hasStyle( SWT.BORDER ) ) {
-      return scrollable.getBorderWidth();
-    }
-    return 0;
-  }
-
   private static int computeVerticalBarOffset( ScrollableControl<? extends Scrollable> scrollable ) {
     int result = scrollable.getVerticalBarSize().x;
     if( result == 0 ) {
@@ -148,7 +151,7 @@ public class AdaptionContext<T extends Scrollable> {
 
   private static Rectangle computeVisibleArea( Composite adapter, ScrollableControl<? extends Scrollable> scrollable ) {
     Rectangle area = adapter.getClientArea();
-    int borderAdjustment = getBorderWidth( scrollable ) * 2;
+    int borderAdjustment = scrollable.getBorderWidth() * 2;
     return new Rectangle( area.x, area.y, area.width + borderAdjustment, area.height + borderAdjustment );
   }
 }

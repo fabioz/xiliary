@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.widget.scrollable.context;
 
 import static com.codeaffine.eclipse.swt.util.ArgumentVerification.verifyNotNull;
@@ -9,6 +19,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -38,6 +49,9 @@ public class ScrollableControl <T extends Scrollable> {
     }
     if( scrollable instanceof Tree ) {
       return ( ( Tree )scrollable ).getItemHeight();
+    }
+    if( scrollable instanceof StyledText ) {
+      return ( ( StyledText )scrollable ).getLineHeight();
     }
     return ZERO.intValue();
   }
@@ -107,7 +121,10 @@ public class ScrollableControl <T extends Scrollable> {
   }
 
   public int getBorderWidth() {
-    return scrollable.getBorderWidth();
+    if( hasStyle( SWT.BORDER ) ) {
+      return scrollable.getBorderWidth();
+    }
+    return 0;
   }
 
   public Color getBackground() {
@@ -146,6 +163,10 @@ public class ScrollableControl <T extends Scrollable> {
     verifyNotNull( type, "type" );
 
     return type.isInstance( scrollable );
+  }
+
+  public boolean isStructuredScrollableType() {
+    return isInstanceof( Table.class ) || isInstanceof( Tree.class );
   }
 
   public T getControl() {

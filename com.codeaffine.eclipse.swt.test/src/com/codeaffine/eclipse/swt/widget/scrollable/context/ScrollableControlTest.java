@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2014 - 2016 Frank Appel
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Frank Appel - initial API and implementation
+ */
 package com.codeaffine.eclipse.swt.widget.scrollable.context;
 
 import static com.codeaffine.eclipse.swt.test.util.ShellHelper.createShell;
@@ -10,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -55,6 +66,16 @@ public class ScrollableControlTest {
     int actual = scrollableControl.getItemHeight();
 
     assertThat( actual ).isSameAs( scrollable.getItemHeight() );
+  }
+
+  @Test
+  public void getItemHeightOfStyledText() {
+    StyledText scrollable = createScrollable( StyledText.class );
+    ScrollableControl<?> scrollableControl = new ScrollableControl<>( scrollable );
+
+    int actual = scrollableControl.getItemHeight();
+
+    assertThat( actual ).isSameAs( scrollable.getLineHeight() );
   }
 
   @Test
@@ -319,6 +340,24 @@ public class ScrollableControlTest {
     Throwable actual = thrownBy( () -> scrollableControl.isInstanceof( null ) );
 
     assertThat( actual ).isInstanceOf( IllegalArgumentException.class );
+  }
+
+  @Test
+  public void isStructuredScrollableType() {
+    ScrollableControl<?> scrollableControl = createScrollableControl( Tree.class );
+
+    boolean actual = scrollableControl.isStructuredScrollableType();
+
+    assertThat( actual ).isTrue();
+  }
+
+  @Test
+  public void isStructureScrollableTypeWithNonStructureScrollableType() {
+    ScrollableControl<?> scrollableControl = createScrollableControl( StyledText.class );
+
+    boolean actual = scrollableControl.isStructuredScrollableType();
+
+    assertThat( actual ).isFalse();
   }
 
   @Test
