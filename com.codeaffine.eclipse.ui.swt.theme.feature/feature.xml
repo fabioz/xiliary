@@ -36,4 +36,21 @@
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="com.codeaffine.eclipse.swt.win"
+         os="win32"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="com.codeaffine.eclipse.ui.swt.theme.win"
+         os="win32"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"/>
+
 </feature>
